@@ -204,7 +204,7 @@
 
   const redirectUri = window.location.origin + window.location.pathname;
   const scopes = ['identify'];
-  const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=https://firecord.voidium.uk/pages/verify&response_type=token&scope=${scopes.join('%20')}`;
+  const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=https://voidiumcdn.github.io/verify/&response_type=token&scope=${scopes.join('%20')}`;
 
   console.log(`[OAuth URL] ${discordAuthUrl}`);
 
