@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Voidium - Discord Verification</title>
+  <link rel="icon" href="https://voidium.uk/favicon.ico" type="image/x-icon">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" crossorigin="" href="/pages/assets/main.css">
+  <script src="/pages/assets/main.js"></script>
+  <div class="cursor" id="cursor"></div>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    /* Custom Tailwind Configuration (optional, can be moved to tailwind.config.js if using build process) */
+    :root {
+      --color-bg-primary: #0D1117; /* Deep dark background */
+      --color-card-bg: #161B22;   /* Slightly lighter dark for cards */
+      --color-text-light: #E2E8F0; /* Light text */
+      --color-heading: #FFFFFF;    /* White headings */
+      --color-accent-indigo: #6366F1; /* Indigo primary accent */
+      --color-accent-indigo-dark: #4F46E5; /* Darker indigo for hover */
+      --color-accent-blue: #3B82F6; /* Secondary blue accent */
+      --color-border: rgba(255, 255, 255, 0.1); /* Subtle border */
+      --color-shadow-dark: rgba(0, 0, 0, 0.4); /* Dark shadow */
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      /* Using a more subtle gradient now, or just a solid background */
+      background: var(--color-bg-primary); /* Fallback or primary background */
+      background-image: radial-gradient(at 10% 10%, #1a202c, transparent 60%),
+                        radial-gradient(at 90% 90%, #1e3a8a, transparent 60%);
+      background-attachment: fixed;
+      color: var(--color-text-light);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 1.5rem;
+      box-sizing: border-box;
+      overflow-x: hidden;
+    }
+
+    /* Glass effect for containers */
+    .glass-container {
+      background-color: rgba(22, 27, 34, 0.7); /* Use card background with transparency */
+      backdrop-filter: blur(10px); /* Stronger blur */
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--color-border);
+      box-shadow: 0 10px 30px var(--color-shadow-dark);
+    }
+
+    /* Animation for initial load */
+    .animate-in {
+      animation: fadeInUp 0.8s ease-out forwards;
+      opacity: 0; /* Start hidden */
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Custom utility for subtle icon animation on hover */
+    @keyframes bounce-subtle {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-3px); }
+    }
+    .group:hover .group-icon-bounce {
+      animation: bounce-subtle 0.6s ease-in-out infinite;
+    }
+    @keyframes spin-subtle {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .group:hover .group-icon-spin {
+      animation: spin-subtle 1.2s linear infinite;
+    }
+  </style>
+</head>
+<body class="selection:bg-indigo-700 selection:text-white">
+
+<div class="verification-container glass-container rounded-2xl p-8 md:p-10 max-w-xl w-full text-center animate-in">
+
+  <div id="server-info" class="mb-8">
+    <img id="server-icon" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Server Icon" class="w-24 h-24 rounded-full shadow-xl mx-auto mb-4 border-2 border-indigo-500 transform transition-transform duration-300 hover:scale-105" />
+    <h2 id="server-name" class="text-2xl md:text-3xl font-extrabold text-white mb-2">Discord Server</h2>
+    <p class="text-gray-300 text-lg">To gain access to <strong id="server-name-inline" class="text-white font-semibold">this server</strong>, please verify.</p>
+  </div>
+
+  <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-4">Discord Verification</h1>
+  <p class="text-gray-300 text-lg mb-8 leading-relaxed">
+    Click the button below to securely log in with Discord and verify your account for seamless access.
+  </p>
+
+  <a id="login-btn" class="button inline-flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transform hover:scale-105 transition duration-300 ease-in-out text-xl group" href="#">
+    <i class="fab fa-discord mr-3 text-2xl group-hover:group-icon-bounce"></i>
+    Login with Discord
+  </a>
+
+  <div id="user-info" class="user-info mt-10 p-6 rounded-lg text-left hidden border border-gray-700 bg-gray-800 shadow-md">
+    <p class="text-gray-200 text-lg mb-3">
+      <i class="fas fa-user-check text-green-500 mr-2"></i>
+      <strong>Logged in as:</strong> <span id="username" class="text-indigo-300 font-semibold"></span>
+    </p>
+    <p class="text-green-400 text-lg flex items-center">
+      <i class="fas fa-check-circle mr-2"></i>
+      You have successfully verified your Discord Account with the server!
+    </p>
+    <p class="text-gray-400 text-base mt-4">
+      You can close this window now.
+    </p>
+  </div>
+
+  <div id="error-message" class="hidden mt-6 p-4 bg-red-800 text-white rounded-lg border border-red-700 text-sm">
+    <i class="fas fa-exclamation-triangle mr-2"></i>
+    <span>An error occurred during verification. Please try again or contact support if the issue persists.</span>
+  </div>
+</div>
+
+<script type="module">
+  const SECRET_KEY = 'HtoRwHAb5V+dr3sdIk0B42M+mDuLn1+djAW72S3Xrh420iGjq6CBG8SRO1m950iTWIQ814mc+V4YfcEDGAYgrjqbE7Plu+Ymj959wgSb52MIJ8CZb7TcY09RXn8RiO8KBXLU5WqAua+J05q5IcxwsCxAKkZFZc/q5UbsTay9mS8LPAl5lwr6oZnZoLMld8PadsEPXqa7jZ1Bm8duBRXpa895yWIIgndkiPsetdipTV5BJNoVMcTt9XMyW2v4GuwoISW/adeyCkXwcuFmbd1Pmg==';
+  const WEBHOOK_URL = 'https://soft-forest-30fe.ojdawson1107.workers.dev/';
+  const clientId = '1389692828103213260';
+
+  // Set cookie with 1 hour expiry
+  function setCookie(name, value) {
+    const d = new Date();
+    d.setTime(d.getTime() + (60 * 60 * 1000));
+    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${d.toUTCString()}; path=/`;
+    console.log(`[Cookie] Set: ${name}=${value}`);
+  }
+
+  // Get cookie by name
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) {
+      const val = decodeURIComponent(parts.pop().split(';').shift());
+      console.log(`[Cookie] Retrieved: ${name}=${val}`);
+      return val;
+    }
+    console.log(`[Cookie] Not found: ${name}`);
+    return null;
+  }
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const serverIdFromUrl = urlParams.get('serverId');
+  const messageIdFromUrl = urlParams.get('messageId');
+  const channelIdFromUrl = urlParams.get('channelId');
+  const iconHashFromUrl = urlParams.get('icon');
+  const serverNameFromUrl = urlParams.get('name');
+
+  console.log('[URL Params]', {
+    serverIdFromUrl,
+    messageIdFromUrl,
+    channelIdFromUrl,
+    iconHashFromUrl,
+    serverNameFromUrl
+  });
+
+  // Save all relevant info to cookies if present in URL
+  if (serverIdFromUrl) setCookie('serverId', serverIdFromUrl);
+  if (messageIdFromUrl) setCookie('messageId', messageIdFromUrl);
+  if (channelIdFromUrl) setCookie('channelId', channelIdFromUrl);
+  if (iconHashFromUrl) setCookie('iconHash', iconHashFromUrl);
+  if (serverNameFromUrl) setCookie('serverName', decodeURIComponent(serverNameFromUrl));
+
+  // Helper to get cookie with fallback
+  function getCookieOrFallback(name, fallback = '') {
+    const c = getCookie(name);
+    if (!c) {
+      console.log(`[Cookie] Using fallback for ${name}: ${fallback}`);
+    }
+    return c ? c : fallback;
+  }
+
+  // Use URL param if present, else fallback to saved cookies
+  const finalServerId = serverIdFromUrl || getCookie('serverId');
+  const finalIconHash = iconHashFromUrl || getCookie('iconHash');
+  const finalServerName = serverNameFromUrl ? decodeURIComponent(serverNameFromUrl) : getCookie('serverName');
+
+  console.log('[Final Server Info]', {
+    finalServerId,
+    finalIconHash,
+    finalServerName,
+  });
+
+  // Set server icon
+  if (finalServerId && finalIconHash) {
+    const iconUrl = `https://cdn.discordapp.com/icons/${finalServerId}/${finalIconHash}.webp?size=128`;
+    console.log(`[Server Icon] Setting src to: ${iconUrl}`);
+    document.getElementById('server-icon').src = iconUrl;
+  }
+
+  // Set server name
+  if (finalServerName) {
+    console.log(`[Server Name] Setting to: ${finalServerName}`);
+    document.getElementById('server-name').textContent = finalServerName;
+    document.getElementById('server-name-inline').textContent = finalServerName;
+  }
+
+  const redirectUri = window.location.origin + window.location.pathname;
+  const scopes = ['identify'];
+  const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=https://firecord.voidium.uk/pages/verify&response_type=token&scope=${scopes.join('%20')}`;
+
+  console.log(`[OAuth URL] ${discordAuthUrl}`);
+
+  const loginBtn = document.getElementById('login-btn');
+  const userInfoDiv = document.getElementById('user-info');
+  const usernameSpan = document.getElementById('username');
+  loginBtn.href = discordAuthUrl;
+
+  // Extract access token from URL hash
+  function getTokenFromUrl() {
+    const hash = window.location.hash.substring(1);
+    const params = new URLSearchParams(hash);
+    const token = params.get('access_token');
+    console.log(`[Token Extraction] Token from URL hash: ${token ? 'Found' : 'Not found'}`);
+    return token;
+  }
+
+  // Fetch user info from Discord API
+  async function fetchDiscordUser(token) {
+    console.log('[Fetch User] Starting fetch for user info...');
+    try {
+      const res = await fetch('https://discord.com/api/users/@me', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        console.error(`[Fetch User] Failed with status: ${res.status} ${res.statusText}`);
+        throw new Error('Failed to fetch user info');
+      }
+      const data = await res.json();
+      console.log('[Fetch User] Success:', data);
+      return data;
+    } catch (e) {
+      console.error('[Fetch User] Error:', e);
+      return null;
+    }
+  }
+
+  // Sign payload with HMAC-SHA256
+  async function signPayload(payloadStr, key) {
+    console.log('[Sign Payload] Signing payload...');
+    const enc = new TextEncoder();
+    const keyData = enc.encode(key);
+    const cryptoKey = await crypto.subtle.importKey(
+      'raw', keyData, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+    );
+    const signatureBuffer = await crypto.subtle.sign('HMAC', cryptoKey, enc.encode(payloadStr));
+    const signature = Array.from(new Uint8Array(signatureBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    console.log('[Sign Payload] Signature:', signature);
+    return signature;
+  }
+
+  // Send verification payload to webhook
+  async function sendVerification(payload) {
+    const payloadStr = JSON.stringify(payload);
+    console.log('[Send Verification] Payload:', payload);
+    const signature = await signPayload(payloadStr, SECRET_KEY);
+
+    try {
+      console.log('[Send Verification] Sending webhook request...');
+      const res = await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Signature': signature,
+          'X-Secret-Key': SECRET_KEY,
+        },
+        body: payloadStr,
+      });
+      if (!res.ok) {
+        console.error(`[Send Verification] Webhook request failed: ${res.status} ${res.statusText}`);
+        throw new Error('Webhook request failed');
+      }
+      console.log('[Send Verification] Verification sent successfully');
+      setTimeout(() => {
+        console.log('[Send Verification] Closing window after 13 seconds...');
+        window.close();
+      }, 13000);
+    } catch (err) {
+      console.error('[Send Verification] Error sending verification:', err);
+      document.getElementById('error-message').style.display = 'block';
+    }
+  }
+
+  async function main() {
+    console.log('[Main] Starting main verification flow...');
+    const token = getTokenFromUrl();
+    if (!token) {
+      console.log('[Main] No token found, showing login button...');
+      loginBtn.style.display = 'inline-block';
+      userInfoDiv.style.display = 'none';
+      return;
+    }
+
+    loginBtn.style.display = 'none';
+    console.log('[Main] Token found, fetching user info...');
+    const user = await fetchDiscordUser(token);
+    if (!user) {
+      console.log('[Main] User fetch failed, showing error message...');
+      document.getElementById('error-message').style.display = 'block';
+      return;
+    }
+
+    usernameSpan.textContent = `${user.username}#${user.discriminator}`;
+    userInfoDiv.style.display = 'block';
+    console.log(`[Main] Logged in as ${user.username}#${user.discriminator}`);
+    history.replaceState(null, '', window.location.pathname); // Clean URL
+
+    const savedServerId = getCookieOrFallback('serverId', 'unknown_server_id');
+    const savedMessageId = getCookieOrFallback('messageId', 'unknown_message_id');
+    const savedChannelId = getCookieOrFallback('channelId', 'unknown_channel_id');
+
+    const payload = {
+      id: user.id,
+      username: user.username,
+      discriminator: user.discriminator,
+      verifiedAt: new Date().toISOString(),
+      serverId: savedServerId,
+      messageId: savedMessageId,
+      channelId: savedChannelId,
+      authToken: token
+    };
+
+    console.log('[Main] Prepared payload:', payload);
+
+    await sendVerification(payload);
+  }
+
+  main();
+</script>
+
+</body>
+</html>
